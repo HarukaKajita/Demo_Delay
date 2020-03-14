@@ -1,0 +1,96 @@
+﻿#pragma kernel InitPosition
+#pragma kernel UpdatePosition
+
+#include "Noise.cginc"
+#include "TrailUtility.cginc"
+//トレイル数 * パーツ数
+RWStructuredBuffer<float3> posBuffer;
+float _Time;
+
+
+[numthreads(PARTS_NUM, 1, 1)]
+void InitPosition(uint3 groupID: SV_GROUPID, uint3 groupThreadID: SV_GROUPTHREADID){
+  uint trailID = groupID.x;
+  uint partsID = groupThreadID.x;
+  uint index = getBufferIndex(trailID, partsID);
+
+  uint iterattion = PARTS_NUM - groupThreadID.x;
+  float3 pos = rand3D(float3(trailID, 0, 0))+0.5;
+  // for(uint i = 0; i < iterattion; i++){
+  //   float3 currentPos = pos;
+  //   //_Timeで場を変化させて収束を回避
+  //   float3 noisePos = (currentPos + (groupID.x+1) + _Time *(rand(trailID)+1)) *0.1;
+  //   float3 dir = pNoise3D(noisePos)-0.47;
+  //   if(length(dir) < 0.01) dir = rand3D(noisePos);
+  //   dir.y = 0;
+  //   dir = normalize(dir);
+    
+    
+  //   //Boundsからはみ出そうなら内側に返す
+  //   float2 bb = float2(16,9)/2.0;
+  //   float boundS = boundStrength(currentPos.xz, bb);
+  //   float2 bd = boundDirection(currentPos.xz, bb);
+  //   //float3 boundDir = -normalize(currentPos);
+  //   //ここが動かない
+  //   //dir = lerp(dir , boundDir, 0);
+
+  //   float delta = 0.1;
+  //   pos = currentPos + dir*delta;
+  // }
+
+  posBuffer[index] = pos;
+}
+
+//groupIDがdispatchの塊のID
+//groupThreadIDがグループ内のスレッドのID
+//SV_DispatchThreadIDが全スレッド内のID
+
+//1Trailは256partsで構成される
+[numthreads(PARTS_NUM, 1, 1)]
+void UpdatePosition(uint3 groupID: SV_GROUPID, uint3 groupThreadID: SV_GROUPTHREADID)
+{
+  uint trailID = groupID.x;
+  uint partsID = groupThreadID.x;
+  uint index = getBufferIndex(trailID, partsID);
+  
+  float3 pos = float3(trailID, partsID, index);
+  
+  if (partsID != 0)
+  {
+    //前のパーツを追う
+    pos = posBuffer[index - 1];
+  }
+  else
+  {
+    float3 currentPos = posBuffer[index];
+    
+    
+    
+    //Boundsからはみ出そうなら内側に返す
+    float2 bb = float2(16,9)/2.0;
+    float boundS = boundStrength(currentPos.xz, bb);
+    float2 bd = boundDirection(currentPos.xz, bb);
+    float3 boundDir = normalize(float3(bd.x,0,bd.y));
+    float3 crossDir = normalize(cross(boundDir, float3(0,1,0)));
+
+    //_Timeで場を変化させて収束を回避
+    float3 noisePos = (currentPos + (groupID.x+1) + _Time *(rand(trailID)+1)) *0.1;
+    float2 n3d = pNoise2D(noisePos) - 0.5;
+    n3d.x = 1-pow(1-n3d.x, 2);
+    n3d = normalize(n3d);
+    float3 dir = crossDir * n3d.x + boundDir * (n3d.y + boundS);
+    dir = normalize(dir);
+    //if(length(dir) < 0.0001) dir = rand3D(noisePos);
+
+
+    //ここが動かない
+    //dir += boundDir * boundS;
+    //dir = lerp(dir , boundDir, boundS);
+
+    float delta = 0.1;
+    pos = currentPos + dir*delta;
+    
+  }
+  
+  posBuffer[index] = pos;
+}
