@@ -50,10 +50,10 @@
         float2 normalizedCoord = abs(xz / bb);
         float len = length(normalizedCoord) * 1;//
         // return 1- len;
-        float2 darken = pow(normalizedCoord, 2);
+        float2 darken = pow(normalizedCoord, 100);
         float scaler = max(darken.x, darken.y);
         
-        return smoothstep(-1, 1, scaler * len);//適当に見やすく
+        return smoothstep(0, 0.4, scaler * len);//適当に見やすく
       }
       
       fixed4 frag(v2f i): SV_Target

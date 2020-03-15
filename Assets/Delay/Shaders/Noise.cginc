@@ -1,4 +1,6 @@
-﻿//関数内で大量に変数を定義するとGPU時間がめちゃ遅くなるのでスコープを使って書き直している部分があるので可読性が少し落ちている。ので注意。
+﻿#ifndef NOISECGINC
+#define NOISECGINC
+//関数内で大量に変数を定義するとGPU時間がめちゃ遅くなるのでスコープを使って書き直している部分があるので可読性が少し落ちている。ので注意。
 ///ret : 0.0 - <1.0
 float rand(float n)
 {
@@ -395,3 +397,5 @@ float fbm(float3 pos)
   }
   return ret / maxValue;
 }
+
+#endif

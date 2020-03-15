@@ -10,46 +10,76 @@ using UnityEngine;
 public class TrailDispatch : MonoBehaviour
 {
     [SerializeField] ComputeShader trailCs;
-    private int kernelID_UpdatePos;
+    private int kernelID_Update;
     private ComputeBuffer posBuffer;
     public ComputeBuffer PosBuffer => posBuffer;
-    
+    private ComputeBuffer dirBuffer;
+    public ComputeBuffer DirBuffer => dirBuffer;
+
     private int id_posBuffer;
+    private int id_dirBuffer;
     private int id_time;
     private int id_trailNum;
-    private int trailNum = 100;
-    private const int partsNum = 32;//must equal trail.compute
+    private int id_delta;
+    
+    [SerializeField] int trailNum = 20;
+    [Range(0.1f, 0.5f)]
+    public float delta = 0.1f;
+    private const int TrailNodeNum = 25;//must equal trail.compute
+    private const float DelayNodeDiff = 10;
 
     [SerializeField] private List<Material> renderingMats;
     
     void Start()
     {
-        int totalPartsNum = trailNum * partsNum;
-        kernelID_UpdatePos = trailCs.FindKernel("UpdatePosition");
+        int trailBuffNodeNum = TrailNodeNum + (int)DelayNodeDiff; 
+        int totalNodeNum = trailNum * trailBuffNodeNum;
+        kernelID_Update = trailCs.FindKernel("Update");
         id_posBuffer = Shader.PropertyToID("posBuffer");
-        id_time = Shader.PropertyToID("_Time");
+        id_dirBuffer = Shader.PropertyToID("dirBuffer");
+        id_time = Shader.PropertyToID("T");
         id_trailNum = Shader.PropertyToID("_TrailNum");
-        posBuffer = new ComputeBuffer(totalPartsNum, Marshal.SizeOf(typeof(Vector3)));
-        posBuffer.SetData(Enumerable.Repeat(Vector3.zero, trailNum * partsNum).ToArray());
-
-        trailCs.SetBuffer(trailCs.FindKernel("InitPosition"), id_posBuffer, posBuffer);
-        trailCs.Dispatch(trailCs.FindKernel("InitPosition"), trailNum, 1,1);
+        id_delta = Shader.PropertyToID("_Delta");
+        
+        posBuffer = new ComputeBuffer(totalNodeNum, Marshal.SizeOf(typeof(Vector3)));
+        posBuffer.SetData(Enumerable.Repeat(Vector3.zero, totalNodeNum).ToArray());
+        
+        dirBuffer = new ComputeBuffer(totalNodeNum, Marshal.SizeOf(typeof(Vector3)));
+        dirBuffer.SetData(Enumerable.Repeat(Vector3.zero, totalNodeNum).ToArray());
+        
+        
+        trailCs.SetFloat(id_time, 0);
+        trailCs.SetFloat(id_delta, delta);
+        trailCs.SetBuffer(trailCs.FindKernel("Init"), id_posBuffer, posBuffer);
+        trailCs.SetBuffer(trailCs.FindKernel("Init"), id_dirBuffer, dirBuffer);
+        trailCs.Dispatch(trailCs.FindKernel("Init"), trailNum, 1,1);
+        
+        renderingMats.ForEach(m => {
+            m.SetBuffer(id_posBuffer, posBuffer);
+            m.SetBuffer(id_dirBuffer, dirBuffer);
+            m.SetInt(id_trailNum, trailNum);
+        });
     }
 
     void FixedUpdate()
     {
         trailCs.SetFloat(id_time, Time.timeSinceLevelLoad);
-        trailCs.SetBuffer(kernelID_UpdatePos, id_posBuffer, posBuffer);
-        trailCs.Dispatch(kernelID_UpdatePos, trailNum, 1,1);
+        trailCs.SetFloat(id_delta, delta);
+        trailCs.SetBuffer(kernelID_Update, id_posBuffer, posBuffer);
+        trailCs.SetBuffer(kernelID_Update, id_dirBuffer, dirBuffer);
+        trailCs.Dispatch(kernelID_Update, trailNum, 1,1);
         
         renderingMats.ForEach(m => {
             m.SetBuffer(id_posBuffer, posBuffer);
+            m.SetBuffer(id_dirBuffer, dirBuffer);
             m.SetInt(id_trailNum, trailNum);
+            m.SetFloat(id_delta, delta);
         });
     }
 
     private void OnDestroy()
     {
         posBuffer.Release();
+        dirBuffer.Release();
     }
 }

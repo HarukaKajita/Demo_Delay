@@ -3,6 +3,7 @@
   Properties
   {
     _MainTex ("Texture", 2D) = "white" { }
+    [Enum(POS, 0, DIR, 1)] _Debug("Debug Color", int) = 0
   }
   SubShader
   {
@@ -38,7 +39,8 @@
       float4 _MainTex_ST;
       
       StructuredBuffer<float3> posBuffer;
-      uint _TrailNum;
+      StructuredBuffer<float3> dirBuffer;
+      int _Debug;
       
       v2f vert(appdata v)
       {
@@ -50,14 +52,18 @@
       
       fixed4 frag(v2f i): SV_Target
       {
-        uint2 coord = uvToCoord(i.uv, uint2(PARTS_NUM, _TrailNum));
-        uint id = coordToID(coord, PARTS_NUM);
-        uint trailID = id / PARTS_NUM;
-        uint partsID = id % PARTS_NUM;
+        //xにnode
+        //yにtrail
+        uint2 coord = uvToCoord(i.uv, uint2(TRAIL_BUFF_NODE_NUM, _TrailNum));
+        uint trailID = coord.y;
+        uint nodeID = coord.x;
+        uint id = trailID * TRAIL_BUFF_NODE_NUM + nodeID;
+        float3 ids = float3(nodeID, trailID, 0);
         float3 pos = posBuffer[id];
-        uint3 maxNum = uint3(_TrailNum, PARTS_NUM, 1);
+        float3 dir = dirBuffer[id];
+        uint3 maxNum = uint3(TRAIL_BUFF_NODE_NUM, _TrailNum, 1);
         fixed4 col = float4(pos / maxNum , 1);
-        if(partsID == 0) return 1;
+        if(_Debug == 1)col = float4(dir / maxNum , 1);
         return col;
       }
       ENDCG
