@@ -1,9 +1,9 @@
 ﻿#ifndef TRAILUTILITY
 #define TRAILUTILITY 
-#define TRAIL_NODE_NUM 25
+#define TRAIL_NODE_NUM 20
 #define DELAY 10
 #define TRAIL_BUFF_NODE_NUM (TRAIL_NODE_NUM + DELAY)
-#define THREADNUM 35
+#define THREADNUM 30
 
 #define WIDTH 0.2
 #include "Noise.cginc"
@@ -25,7 +25,7 @@ float2 rot(float2 dir, float amount){
 float3 updateDir(float3 pos, float3 dir){
   //float noise = pNoise(pos*10 + _T) - 0.5;
   float noise = curlNoise(pos*0.5 + _T);
-  float3 rotStrength = 0.1;//旋回の自由度
+  float3 rotStrength = 0.05;//旋回の自由度
   dir.xz = rot(dir.xz, noise * rotStrength);
   return normalize(dir);
 }

@@ -68,13 +68,13 @@ Material:
     - _Iteration: 82
     - _Metallic: 0
     - _Mode: 0
-    - _NoiseScale: 10.9
+    - _NoiseScale: 5
     - _NoiseType: 1
     - _NormalCheckThreshold: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _Radius: 0
-    - _RimLightPower: 100
+    - _RimLightPower: 13
     - _Shadow: 0
     - _ShapeType: 0
     - _SmoothnessTextureChannel: 0
@@ -82,11 +82,11 @@ Material:
     - _SpecularPower: 100
     - _SrcBlend: 1
     - _SurfaceGradientWidth: 0
-    - _Threshold: 0.447
+    - _Threshold: 0.51
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _InnerColor: {r: 0.6698113, g: 0.53108627, b: 0, a: 1}
-    - _RimLightColor: {r: 1, g: 0, b: 0.16099882, a: 1}
+    - _InnerColor: {r: 0.3248663, g: 1, b: 0, a: 1}
+    - _RimLightColor: {r: 0, g: 0, b: 0, a: 1}

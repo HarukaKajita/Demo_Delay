@@ -24,8 +24,8 @@ public class TrailDispatch : MonoBehaviour
     
     [SerializeField] int trailNum = 20;
     [Range(0.1f, 0.5f)]
-    public float delta = 0.1f;
-    private const int TrailNodeNum = 25;//must equal trail.compute
+    public float delta = 0.05f;
+    private const int TrailNodeNum = 20;//must equal trail.compute
     private const float DelayNodeDiff = 10;
 
     [SerializeField] private List<Material> renderingMats;

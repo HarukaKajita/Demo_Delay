@@ -137,8 +137,9 @@
         float len = _Delta/2.0;
         if(nodeID != 0){
             float3 pre = posBuffer[pid-1];
-            len = length(pos - pre)/2.0;
+            len = length(pos - pre)/1.0;
         }
+        
         float width = WIDTH;
         float3 objCamPos = mul(unity_WorldToObject, _WorldSpaceCameraPos);
         int xface = distance(pos + xDir * width, objCamPos) < distance(pos - xDir * width, objCamPos) ? 1 : -1;  
@@ -442,7 +443,7 @@
         float len = _Delta/2.0;
         if(nodeID != 0){
             float3 pre = posBuffer[pid-1];
-            len = length(pos - pre)/2.0;
+            len = length(pos - pre);
         }
         float width = WIDTH;
         float3 objCamPos = mul(unity_WorldToObject, _WorldSpaceCameraPos);
